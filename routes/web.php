@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Models\Ideas;
 use App\Models\Post;
+use App\Models\User;
 
 Route::view('/', 'welcome', [
     'greeting' => 'Hello, World!',
@@ -80,5 +81,66 @@ Route::patch('/posts/{post}', function (Post $post) {
     ]);
 
     return redirect('/posts' . '/' . $post->id);
-}
-);
+});
+
+// ===== USER CRUD ROUTES (Activity 3) =====
+// Users index - display all
+Route::get('/users', function () {
+    $users = User::all();
+    return view('users.index', ['users' => $users]);
+});
+
+// Create form
+Route::view('/users/create', 'user_registration');
+
+// Store new user
+Route::post('/users', function () {
+    $validated = request()->validate([
+        'first_name' => 'required|string|max:255',
+        'last_name' => 'required|string|max:255',
+        'middle_name' => 'nullable|string|max:255',
+        'nickname' => 'nullable|string|max:255',
+        'email' => 'required|email|unique:users,email|max:255',
+        'age' => 'nullable|integer|min:0',
+        'address' => 'nullable|string',
+        'contact_number' => 'nullable|string|max:20',
+    ]);
+
+    User::create($validated);
+
+    return redirect('/users')->with('success', 'User created successfully!');
+})->name('users.store');
+
+// Show single user
+Route::get('/users/{user}', function (User $user) {
+    return view('users.show', ['user' => $user]);
+});
+
+// Edit form
+Route::get('/users/{user}/edit', function (User $user) {
+    return view('users.edit', ['user' => $user]);
+});
+
+// Update
+Route::patch('/users/{user}', function (User $user) {
+    $validated = request()->validate([
+        'first_name' => 'required|string|max:255',
+        'last_name' => 'required|string|max:255',
+        'middle_name' => 'nullable|string|max:255',
+        'nickname' => 'nullable|string|max:255',
+        'email' => 'required|email|unique:users,email,' . $user->id,
+        'age' => 'nullable|integer|min:0',
+        'address' => 'nullable|string',
+        'contact_number' => 'nullable|string|max:20',
+    ]);
+
+    $user->update($validated);
+
+    return redirect('/users/' . $user->id)->with('success', 'User updated successfully!');
+});
+
+// Delete
+Route::delete('/users/{user}', function (User $user) {
+    $user->delete();
+    return redirect('/users');
+});
