@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
-use App\Models\Ideas;
 use App\Models\Post;
 use App\Models\User;
 
@@ -144,3 +142,5 @@ Route::delete('/users/{user}', function (User $user) {
     $user->delete();
     return redirect('/users');
 });
+
+Route::resource('books', \App\Http\Controllers\BookController::class);
